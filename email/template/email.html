@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Email</title>
+</head>
+<body>
+    Automobile:
+    <table>
+        <thead>
+        <tr>
+            <th>Property</th>
+            <th>Value</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>Model</td>
+            <td>{{ .Automobile.Model }}</td>
+        </tr>
+        <tr>
+            <td>Type</td>
+            <td>{{ .Automobile.Type }}</td>
+        </tr>
+        <tr>
+            <td>Manufacture</td>
+            <td>{{ .Automobile.Manufacture }}</td>
+        </tr>
+        </tbody>
+    </table>
+    Part:
+    <table>
+        <thead>
+        <tr>
+            <th>Property</th>
+            <th>Value</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>Name</td>
+            <td>{{ .Part.Name }}</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <a href="http://localhost:9001/parts/{{.File}}/download">Download File</a>
+</body>
+</html>

@@ -1,0 +1,148 @@
+version: "3"
+services:
+  automobile:
+    container_name: api_automobile
+    build:
+      context: ./automobile
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8001"
+    depends_on:
+      - automobile_db
+    environment:
+      MYSQL_DATABASE: 'automobiles'
+      MYSQL_USER: 'user'
+      MYSQL_PASSWORD: 'password'
+      MYSQL_ROOT_USER: 'root'
+      MYSQL_ROOT_PASSWORD: 'password'
+      MYSQL_NAME: 'automobile_db'
+      MYSQL_PORT: 3306
+    networks:
+      - pars
+  part:
+    container_name: api_part
+    build:
+      context: ./part
+      dockerfile: Dockerfile
+    ports:
+      - "8002:8002"
+    depends_on:
+      - part_db
+    environment:
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: adminminiopassword
+      MINIO_PORT: 9000
+      MYSQL_DATABASE: 'parts'
+      MYSQL_USER: 'user'
+      MYSQL_PASSWORD: 'password'
+      MYSQL_ROOT_USER: 'root'
+      MYSQL_ROOT_PASSWORD: 'password'
+      MYSQL_NAME: 'part_db'
+      MYSQL_PORT: 3306
+    networks:
+      - pars
+  file:
+    container_name: api_file
+    build:
+      context: ./file
+      dockerfile: Dockerfile
+    ports:
+      - "8003:8003"
+    depends_on:
+      - minio
+    environment:
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: adminminiopassword
+      MINIO_PORT: 9000
+    volumes:
+      - ./files:/app/files
+    networks:
+      - pars
+  email:
+    container_name: api_email
+    build:
+      context: ./email
+      dockerfile: Dockerfile
+    ports:
+      - "8004:8004"
+    environment:
+      MAIL_MAILER: smtp
+      MAIL_HOST: smtp.mailtrap.io
+      MAIL_PORT: 2525
+      MAIL_USERNAME: d249da118a74c5
+      MAIL_PASSWORD: 771fcfdb6ca331
+      MAIL_ENCRYPTION: tls
+    networks:
+      - pars
+
+  part_db:
+    container_name: part_db
+    image: mysql:5.7
+    restart: always
+    environment:
+      MYSQL_DATABASE: 'parts'
+      MYSQL_USER: 'user'
+      MYSQL_PASSWORD: 'password'
+      MYSQL_ROOT_PASSWORD: 'password'
+    command:
+      --default-authentication-plugin=mysql_native_password
+    ports:
+      - "3307:3306"
+    expose:
+      - 3307
+    volumes:
+      - ./parts_db/:/docker-entrypoint-initdb.d/
+      - ./part_db:/var/lib/mysql:rw
+    networks:
+      - pars
+
+  automobile_db:
+    container_name: automobile_db
+    image: mysql:5.7
+    restart: always
+    environment:
+      MYSQL_DATABASE: 'automobiles'
+      MYSQL_USER: 'user'
+      MYSQL_PASSWORD: 'password'
+      MYSQL_ROOT_PASSWORD: 'password'
+    command:
+      --default-authentication-plugin=mysql_native_password
+    ports:
+      - "3308:3306"
+    expose:
+      - 3308
+    volumes:
+      - ./automobiles_db/:/docker-entrypoint-initdb.d/
+      - ./automobile_db:/var/lib/mysql:rw
+    networks:
+      - pars
+
+  minio:
+    image: "minio/minio"
+    volumes:
+      - ./minio/data:/data
+    command: minio server /data  --console-address :9001
+    networks:
+      - pars
+    environment:
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: adminminiopassword
+      MINIO_PORT: 9000
+      MINIO_DEFAULT_BUCKETS: "pars"
+    ports:
+      - "9000:9000"
+      - "9001:9001" 
+    expose:
+      - "9000"
+    restart: always
+
+networks:
+  pars:
+    driver: bridge
+
+volumes:
+  part_db:
+  parts_db:
+  automobile_db:
+  automobiles_db:
+  # files:
